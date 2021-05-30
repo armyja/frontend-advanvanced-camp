@@ -26,7 +26,19 @@ let syntax = {
         ["Expression", ";"]
     ],
     Expression: [
-        ["AdditiveExpression"]
+        ["AssignmentExpression"]
+    ],
+    AssignmentExpression: [
+        ["LeftHandSideExpression", "=", "LogicalORExpression"],
+        ["LogicalORExpression"]
+    ],
+    LogicalORExpression: [
+        ["LogicalANDExpression"],
+        ["LogicalORExpression", "||", "LogicalANDExpression"],
+    ],
+    LogicalANDExpression: [
+        ["AdditiveExpression"],
+        ["LogicalANDExpreesion", "&&", "AdditiveExpression"],
     ],
     AdditiveExpression: [
         ["MultiplicativeExpression"],
@@ -35,10 +47,27 @@ let syntax = {
     ],
     MultiplicativeExpression: [
         // 最基础的表达式的内容
-        ["PrimaryExpression"],
-        ["MultiplicativeExpression", "*", "MultiplicativeExpression"],
-        ["MultiplicativeExpression", "/", "MultiplicativeExpression"],
+        ["LeftHandSideExpression"],
+        ["MultiplicativeExpression", "*", "LeftHandSideExpression"],
+        ["MultiplicativeExpression", "/", "LeftHandSideExpression"],
     ],
+    LeftHandSideExpression: [
+        ["CallExpression"],
+        ["NewExpression"],
+    ],
+    CallExpression: [
+        ["MemberExpression", "Arguments"],
+        ["CallExpression", "Arguments"],
+    ], // new a()
+    NewExpression: [
+        ["new", "NewExpression"],
+        ["MemberExpression"],
+    ], // new a
+    MemberExpression: [
+        ["PrimaryExpression"],
+        ["PrimaryExpression", ".", "Identifier"],
+        ["PrimaryExpression", ".", "[", "Expression", "]"],
+    ], // new a.b()
     PrimaryExpression: [
         ["(", "Expression", ")"],
         ["Number"],
@@ -47,12 +76,24 @@ let syntax = {
     ],
     // 字面量
     Literal: [
-        ["Number"],
         ["NumericLiteral"],
-        ["String"],
-        ["Boolean"],
-        ["Null"],
-        ["RegularExpression"],
+        ["StringLiteral"],
+        ["BooleanLiteral"],
+        ["NullLiteral"],
+        ["RegularExpressionLiteral"],
+        ["ObjectLiteral"],
+        ["ArrayLiteral"],
+    ],
+    ObjectLiteral: [
+        ["{", "PropertyList", "}"]
+    ],
+    PropertyList: [
+        ["Property"],
+        ["PropertyList", ",", "Property"],
+    ],
+    Property: [
+        ["StringLiteral", ":", "AdditiveExpression"],
+        ["Identifier", ":", "AdditiveExpression"],
     ]
 }
 
@@ -64,6 +105,9 @@ function closure(state) {
     hash[JSON.stringify(state)] = state;
     let queue = [];
     for (let symbol in state) {
+        if (symbol.match(/^\$/)) {
+            continue;
+        }
         queue.push(symbol);
     }
     while (queue.length) {
@@ -72,6 +116,7 @@ function closure(state) {
         // console.log(symbol);
         if (syntax[symbol]) {
             for (let rule of syntax[symbol]) {
+                console.log(rule);
                 if (!state[rule[0]]) {
                     queue.push(rule[0]) // why push rule[0], first char
                 }
@@ -89,7 +134,6 @@ function closure(state) {
         }
     }
     for (let symbol in state) {
-        console.log(symbol)
         if (symbol.match(/^\$/)) {
             continue;
         }
@@ -112,7 +156,7 @@ let start = {
 closure(start);
 
 
-function parse(source) {
+export function parse(source) {
 
     let stack = [start];
     let symbolStack = [];
@@ -159,45 +203,20 @@ function parse(source) {
 
 }
 
-let evaluator = {
-    Program(node) {
-        return evaluate(node.children[0]);
-    },
-    StatementList(node) {
-        if (node.children.length === 1) {
-            return evaluate(node.children[0]);
-        } else {
-            evaluate(node.children[0]);
-            return evaluate(node.children[1]);
-        }
-        console.log(node);
-    },
-    Statement(node) {
-        return evaluate(node.children[0]);
-    },
-    VariableDeclaration(node) {
-        console.log("Declare variable", node.children[1].name);
-    },
-    EOF() {
-        return null;
-    }
-}
 
-function evaluate(node) {
-    if (evaluator[node.type]) {
-        return evaluator[node.type](node);
-    }
-}
 
 /////////////////
 
 
-let source = `
-    var a;
-    var b;
-    a + 1;
-`
+// let source = `
+//     a;
+// `
 
-let tree = parse(source);
+// let tree = parse(source);
 
-evaluate(tree);
+// console.log(evaluate(tree));
+
+// window.js = {
+//     evaluate,
+//     parse,
+// }

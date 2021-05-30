@@ -66,14 +66,14 @@ export function* scan(str) {
         LineTerminator: /\n/,
         Comments: /\/\*(?:[^*]|\*[^\/])*\*\/|\/\/[^\n]*/,
         Token: "<Literal>|<Keywords>|<Identifier>|<Punctuator>",
-        Literal: "<NumericLiteral>|<BooleanLiterial>|<StringLiterial>|<NullLiterial>",
-        NumericLiteral: /(?:[1-9][0-9]*|0)(?:\.[0-9]*)?|\.[0-9]+/,
-        BooleanLiterial: /true|false/,
-        StringLiterial: /\"(?:[^"\n]|\\[\s\S])*\"|\'(?:[^'\n]|\\[\s\S])*\'/,
-        NullLiterial: /null/,
+        Literal: "<NumericLiteral>|<BooleanLiteral>|<StringLiteral>|<NullLiteral>",
+        NumericLiteral: /0x[0-9a-zA-Z]+|0o[0-7]+|0b[01]+|(?:[1-9][0-9]*|0)(?:\.[0-9]*)?|\.[0-9]+/,
+        BooleanLiteral: /true|false/,
+        StringLiteral: /\"(?:[^"\n]|\\[\s\S])*\"|\'(?:[^'\n]|\\[\s\S])*\'/,
+        NullLiteral: /null/,
         Identifier: /[a-zA-Z_$][a-zA-Z0-9_$]*/,
-        Keywords: /if|else|for|function|var|let/,
-        Punctuator: /\+|\,|\?|\:|\{|\}|\.|\(|\=|\<|\+\+|\=\=|\=\>|\*|\)|\[|\]|;/
+        Keywords: /if|else|for|function|var|let|new/,
+        Punctuator: /\|\||\&\&|\+|\,|\?|\:|\{|\}|\.|\(|\=|\<|\+\+|\=\=|\=\>|\*|\)|\[|\]|;/
     }, "g", "InputElement");
 
     while (regexp.lastIndex < str.length) {
@@ -91,20 +91,20 @@ export function* scan(str) {
                 type: "NumericLiteral",
                 value: r[0]
             }
-        } else if (r.BooleanLiterial) {
+        } else if (r.BooleanLiteral) {
             yield {
-                type: "BooleanLiterial",
+                type: "BooleanLiteral",
                 value: r[0]
             }
 
-        } else if (r.StringLiterial) {
+        } else if (r.StringLiteral) {
             yield {
-                type: "StringLiterial",
+                type: "StringLiteral",
                 value: r[0]
             }
-        } else if (r.NullLiterial) {
+        } else if (r.NullLiteral) {
             yield {
-                type: "NullLiterial",
+                type: "NullLiteral",
                 value: null
             }
         } else if (r.Identifier) {
