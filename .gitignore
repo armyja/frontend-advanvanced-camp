@@ -1,6 +1,8 @@
 node_modules/
 .vscode/
-src/
+/src/
 other/
 login/
 viewport.jpg
+/generator-*
+/html-parser
