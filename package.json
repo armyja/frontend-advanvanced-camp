@@ -2,5 +2,9 @@
   "dependencies": {
     "css": "^3.0.0",
     "images": "^3.2.3"
+  },
+  "devDependencies": {
+    "eslint": "^7.30.0",
+    "eslint-plugin-react": "^7.24.0"
   }
 }
